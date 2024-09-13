@@ -317,12 +317,19 @@ def _process_rank_one_or_two_observation(
 def steps_from_proto(
     agent_info_list: Collection[AgentInfoProto], behavior_spec: BehaviorSpec
 ) -> Tuple[DecisionSteps, TerminalSteps]:
-    decision_agent_info_list = [
-        agent_info for agent_info in agent_info_list if not agent_info.done
-    ]
     terminal_agent_info_list = [
         agent_info for agent_info in agent_info_list if agent_info.done
     ]
+    terminal_agent_id = np.array(
+        [agent_info.id for agent_info in terminal_agent_info_list], dtype=np.int32
+    )
+    decision_agent_info_list = [
+        agent_info for agent_info in agent_info_list if (not agent_info.done) and (agent_info.id not in terminal_agent_id)
+    ]
+    decision_agent_id = np.array(
+        [agent_info.id for agent_info in decision_agent_info_list], dtype=np.int32
+    )
+
     decision_obs_list: List[np.ndarray] = []
     terminal_obs_list: List[np.ndarray] = []
     for obs_index, observation_spec in enumerate(behavior_spec.observation_specs):
@@ -376,12 +383,6 @@ def steps_from_proto(
     max_step = np.array(
         [agent_info.max_step_reached for agent_info in terminal_agent_info_list],
         dtype=bool,
-    )
-    decision_agent_id = np.array(
-        [agent_info.id for agent_info in decision_agent_info_list], dtype=np.int32
-    )
-    terminal_agent_id = np.array(
-        [agent_info.id for agent_info in terminal_agent_info_list], dtype=np.int32
     )
     action_mask = None
     if behavior_spec.action_spec.discrete_size > 0:
