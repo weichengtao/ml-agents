@@ -50,6 +50,7 @@ class UnityPettingzooBaseEnv:
                 _, _, _, _, _ = self._batch_update(behavior_name)
         self._update_observation_spaces()
         self._update_action_spaces()
+        self._render_mode = 'human'
 
     def _assert_loaded(self) -> None:
         if self._env is None:
@@ -298,7 +299,11 @@ class UnityPettingzooBaseEnv:
         which returns a numpy array and is supported by all environments outside of classic,
         and `'ansi'` which returns the strings printed (specific to classic environments).
         """
-        pass
+        self._render_mode = mode
+    
+    @property
+    def render_mode(self):
+        return self._render_mode
 
     @property
     def dones(self):
