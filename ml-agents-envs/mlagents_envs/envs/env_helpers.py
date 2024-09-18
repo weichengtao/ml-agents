@@ -42,9 +42,9 @@ def _unwrap_batch_steps(batch_steps, behavior_name):
     obs = {k: v if len(v) > 1 else v[0] for k, v in obs.items()}
     dones = {agent_id: True for agent_id in termination_id}
     dones.update({agent_id: False for agent_id in decision_id})
-    terminations = {agent_id: True for i, agent_id in enumerate(termination_id) if not termination_batch.interrupted[i]}
+    terminations = {agent_id: not termination_batch.interrupted[i] for i, agent_id in enumerate(termination_id)}
     terminations.update({agent_id: False for agent_id in decision_id})
-    truncations = {agent_id: True for i, agent_id in enumerate(termination_id) if termination_batch.interrupted[i]}
+    truncations = {agent_id: termination_batch.interrupted[i] for i, agent_id in enumerate(termination_id)}
     truncations.update({agent_id: False for agent_id in decision_id})
     rewards = {
         agent_id: termination_batch.reward[i]
