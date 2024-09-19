@@ -249,8 +249,6 @@ class UnityPettingzooBaseEnv:
         self._truncations = {}
         self._rewards = {}
         self._cumm_rewards = {}
-        self._episodic_return = {}
-        self._episodic_length = {}
         self._infos = {}
         self._agent_id_to_index = {}
 
