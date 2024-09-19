@@ -37,6 +37,8 @@ class UnityPettingzooBaseEnv:
         self._truncations: Dict[str, bool] = {}  # agent_id: truncation
         self._rewards: Dict[str, float] = {}  # agent_id: reward
         self._cumm_rewards: Dict[str, float] = {}  # agent_id: reward
+        self._episodic_return: Dict[str, float] = {}  # agent_id: episodic_return
+        self._episodic_length: Dict[str, int] = {}  # agent_id: episodic_length
         self._infos: Dict[str, Dict] = {}  # agent_id: info
         self._action_spaces: Dict[str, spaces.Space] = {}  # behavior_name: action_space
         self._observation_spaces: Dict[
@@ -184,6 +186,8 @@ class UnityPettingzooBaseEnv:
             del self._truncations[current_agent]
             del self._rewards[current_agent]
             del self._cumm_rewards[current_agent]
+            del self._episodic_return[current_agent]
+            del self._episodic_length[current_agent]
             del self._infos[current_agent]
 
     def _step(self):
@@ -198,6 +202,13 @@ class UnityPettingzooBaseEnv:
             self._truncations.update(truncations)
             self._rewards.update(rewards)
             self._cumm_rewards.update(cumulative_rewards)
+            for current_agent, current_reward in rewards.items():
+                self._episodic_return[current_agent] += current_reward
+                self._episodic_length[current_agent] += 1
+                self._infos[current_agent]['episode'] = {
+                    'r': self._episodic_return[current_agent],
+                    'l': self._episodic_length[current_agent],
+                }
         self._agent_index = 0
 
     def _cleanup_agents(self):
@@ -238,6 +249,8 @@ class UnityPettingzooBaseEnv:
         self._truncations = {}
         self._rewards = {}
         self._cumm_rewards = {}
+        self._episodic_return = {}
+        self._episodic_length = {}
         self._infos = {}
         self._agent_id_to_index = {}
 
@@ -258,6 +271,8 @@ class UnityPettingzooBaseEnv:
         self._truncations = {agent: False for agent in self._agents}
         self._rewards = {agent: 0 for agent in self._agents}
         self._cumm_rewards = {agent: 0 for agent in self._agents}
+        self._episodic_return = {agent: 0 for agent in self._agents}
+        self._episodic_length = {agent: 0 for agent in self._agents}
 
     def _batch_update(self, behavior_name):
         current_batch = self._env.get_steps(behavior_name)
@@ -324,6 +339,14 @@ class UnityPettingzooBaseEnv:
     @property
     def rewards(self):
         return dict(self._rewards)
+
+    @property
+    def episodic_return(self):
+        return dict(self._episodic_return)
+
+    @property
+    def episodic_length(self):
+        return dict(self._episodic_length)
 
     @property
     def infos(self):
